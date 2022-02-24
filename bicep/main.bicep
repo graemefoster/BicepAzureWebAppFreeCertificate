@@ -43,7 +43,7 @@ resource DnsVerificationTxtRecord 'Microsoft.Network/dnsZones/TXT@2018-05-01' = 
   }
 }
 
-resource DnsARecord 'Microsoft.Network/dnsZones/CNAME@2018-05-01' = {
+resource DnsRecord 'Microsoft.Network/dnsZones/CNAME@2018-05-01' = {
   name: hostNameSegment
   parent: DnsZone
   properties: {
@@ -75,6 +75,6 @@ resource WebAppHostNameBindingSsl 'Microsoft.Web/sites/hostNameBindings@2021-03-
   }
   dependsOn: [
     DnsVerificationTxtRecord
-    DnsARecord
+    DnsRecord
   ]
 }
