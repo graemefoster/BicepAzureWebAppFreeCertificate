@@ -55,6 +55,15 @@ resource DnsRecord 'Microsoft.Network/dnsZones/CNAME@2018-05-01' = {
 }
 
 
+resource WebAppHostNameBindingSslDisabled 'Microsoft.Web/sites/hostNameBindings@2021-03-01' = {
+  name: '${WebApp.name}/${hostNameSegment}.${dnsZoneName}'
+  properties: {
+  }
+  dependsOn: [
+    DnsVerificationTxtRecord
+  ]
+}
+
 resource WebAppCertificate 'Microsoft.Web/certificates@2021-03-01' = {
   location: location
   name: '${hostNameSegment}.${dnsZoneName}'
@@ -65,16 +74,19 @@ resource WebAppCertificate 'Microsoft.Web/certificates@2021-03-01' = {
     ]
     serverFarmId: AppServicePlan.id
   }
-}
-
-resource WebAppHostNameBindingSsl 'Microsoft.Web/sites/hostNameBindings@2021-03-01' = {
-  name: '${WebApp.name}/${hostNameSegment}.${dnsZoneName}'
-  properties: {
-    customHostNameDnsRecordType: 'CName'
-    sslState: 'SniEnabled'
-  }
   dependsOn: [
-    DnsVerificationTxtRecord
+    WebAppHostNameBindingSslDisabled
     DnsRecord
   ]
 }
+
+module EnableSslBinding 'configure-hostname-binding.bicep' = {
+  name: 'enable-ssl-binding'
+  params: {
+    certificateThumbprint: WebAppCertificate.properties.thumbprint
+    dnsZoneName: dnsZoneName
+    hostNameSegment: hostNameSegment
+    webAppName: WebApp.name
+  }
+}
+
